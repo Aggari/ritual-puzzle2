@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ritual Puzzle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f4f9f7;--card:#ffffff;--border:#d4e8e0;
+  --accent:#4ab88c;--accentSoft:#e6f5ef;--accentMid:#a3d9c2;
+  --text:#2d3b35;--textSoft:#7a9389;--textMuted:#b0c5bb;
+  --font:'DM Sans','Pretendard',-apple-system,sans-serif;
+  --serif:'DM Serif Display',Georgia,serif;
+}
+body{background:var(--bg);font-family:var(--font);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.wrap{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:440px;width:100%}
+.card{background:var(--card);border-radius:20px;border:1px solid var(--border);box-shadow:0 4px 40px rgba(74,184,140,.08),0 1px 3px rgba(0,0,0,.04);padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px;width:100%}
+h1{font-family:var(--serif);font-weight:400;font-size:26px;color:var(--text);letter-spacing:1px}
+.sub{font-size:11px;color:var(--textMuted);letter-spacing:.5px}
+.member-row{font-size:14px;color:var(--accent);font-weight:600;letter-spacing:.3px;display:flex;align-items:center;gap:6px}
+.skip-btn{background:none;border:1px solid var(--border);border-radius:50%;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--textSoft);transition:all .15s;line-height:1}
+.skip-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accentSoft)}
+.stats{display:flex;gap:28px;font-size:13px;color:var(--textSoft)}
+.stats b{color:var(--accent);font-size:16px;font-weight:700}
+.btn{padding:8px 18px;border:1.5px solid var(--border);background:var(--card);color:var(--textSoft);font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;letter-spacing:.3px;transition:all .15s;font-family:var(--font)}
+.btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accentSoft)}
+.btn.active{border-color:var(--accent);background:var(--accentSoft);color:var(--accent)}
+.board-wrap{padding:4px;border-radius:14px;background:linear-gradient(135deg,var(--accentMid),var(--border))}
+.board{position:relative;border-radius:11px;overflow:hidden;background:var(--bg)}
+.tile{position:absolute;transition:left .16s ease-out,top .16s ease-out;cursor:pointer;border:1px solid rgba(74,184,140,.15);border-radius:2px}
+.tile.empty{opacity:0;cursor:default;border:none}
+.hint-toggle{font-size:12px;color:var(--textMuted);cursor:pointer;user-select:none;font-weight:500;transition:color .15s}
+.hint-toggle:hover,.hint-toggle.on{color:var(--accent)}
+.hint-img{position:fixed;bottom:16px;right:16px;width:100px;height:100px;border-radius:12px;border:2px solid var(--accentMid);object-fit:cover;opacity:.85;z-index:50;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.overlay{position:fixed;inset:0;background:rgba(244,249,247,.92);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:100;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.overlay h2{font-size:28px;color:var(--text);font-family:var(--serif);font-weight:400}
+.overlay p{color:var(--textSoft);font-size:14px}
+.share-btn{padding:10px 24px;border:1.5px solid #1DA1F2;background:#1DA1F2;color:#fff;font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;letter-spacing:.3px;transition:all .15s;font-family:var(--font);text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.share-btn:hover{background:#0d8ecf}
+.pfp-circle{width:60px;height:60px;border-radius:50%;border:2.5px solid var(--accent);object-fit:cover;box-shadow:0 2px 12px rgba(74,184,140,.15)}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+
+<script>
+const MEMBERS=[
+"_0xBANDAL","_0xKreko","_0xOsaragi","_0x_HalfMoonKid","_0xhigash1","_0xspeedx","_0xusamaa",
+"_1000jae00001","_4betterlife__","_Anh_Beeng386","_BunsDev","_Chigo1andonly","_Cripson01",
+"_DipuDas76904823","_Donaclin","_EnzoThang2406","_Fakhirgb","_GoYou888701","_Liora_2278",
+"_Livinginaprayer","_MOONSEO_","_Madrii_dd","_MarkoStevan19","_Maxim_Ilyano","_NanangN27",
+"_Neitenoz26","_PMemoye","_PixelSect","_Pugovka_Mari","_Rahul_xyz01","_SOYEONKIM521597",
+"_SaintLee04","_SatoSanMOON","_Syrupynut","_Yaneul2ee","__focapa","_anirudhchain","_antgeo13",
+"_batagor","_bramexyz","_bruceBravogo","_calistalarisa","_ccrriiy","_cristypuiu",
+"_cryptohypegirl0","_cryptokj77","_dappeum","_decka_chan","_elifhilalumucu","_ericgudboy",
+"_farmtokyo","_girin0505","_gizdusumandnode","_glenfiddich_18","_hamiweb3","_heeheeheeyaa",
+"_herbcase7","_imborie","_innerpeace300","_jasm1ne_eth","_jepslife","_johhmeow","_johntolxbt",
+"_kastew99999","_kikiundo3","_lalararara37","_linhlambo","_lord__luci","_mashpotatop",
+"_maslenaFM","_meison_mswen","_mifyroxyy","_mingyu_wtf","_moc_tx89","_moooo_iii",
+"_murataydn_34","_nikitatechnik","_pangdung_","_raintaro_rt","_rifal19988","_ritualcommunity",
+"_rocariedk","_seesac_","_sengoku_xyz","_silverwave1000","_songsong6059","_soyouIJ",
+"_starknight50x","_sterjke","_temainweb","_tutubearrr","_tutufly_yy","_w22py","_wallets12_lee",
+"_whuanjg","_yooyoungmin3","_yourinuu","_yusrilatiqur","_zeno_Isone","_zzing____"
+];
+
+const PNG_SET=new Set(["_rocariedk"]);
+function ext(m){return PNG_SET.has(m)?".png":".jpg";}
+function handle(m){return "@"+m.substring(1);}
+function imgPath(m){return "images/"+m+ext(m);}
+
+const N=4, TOTAL=N*N, EMPTY=TOTAL-1;
+
+const SHARE_MSGS=[
+  (h,t)=>`🧩 Just pieced together ${h}'s beautiful face! 💕 Can you find yours?`,
+  (h,t)=>`🧩 I put ${h} back together in ${t}! 🐱✨ Who's next?`,
+  (h,t)=>`🧩 ${h} was scattered into 16 pieces... I saved them! 💖 Your turn~`,
+  (h,t)=>`🧩 Completed ${h}'s puzzle in ${t}! 🧡 Every piece matters in Ritual fam~`,
+  (h,t)=>`🧩 Found all 16 pieces of ${h}! 🫶 Come find your fam in the puzzle~`
+];
+const TAGS="@ritualfnd @dunken9718 @Jez_Cryptoz @joshsimenhoff @0xMadScientist";
+const URL="https://ritual-puzzle2-badang.vercel.app/";
+
+// Audio
+const AC=window.AudioContext||window.webkitAudioContext;
+let ctx=null;
+function ac(){if(!ctx)ctx=new AC();}
+function sndMove(){
+  try{ac();const o=ctx.createOscillator(),g=ctx.createGain();
+  o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.value=600;g.gain.value=.08;
+  o.start();g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.1);o.stop(ctx.currentTime+.1);}catch(e){}
+}
+function sndWin(){
+  try{ac();[523,659,784,1047].forEach((f,i)=>{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.value=f;g.gain.value=.12;
+    o.start(ctx.currentTime+i*.15);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.15+.4);
+    o.stop(ctx.currentTime+i*.15+.4);});}catch(e){}
+}
+
+// Puzzle
+function solvable(a){
+  let inv=0;const f=a.filter(x=>x!==EMPTY);
+  for(let i=0;i<f.length;i++)for(let j=i+1;j<f.length;j++)if(f[i]>f[j])inv++;
+  return(inv+Math.floor(a.indexOf(EMPTY)/N))%2===1;
+}
+function mkBoard(){
+  const a=Array.from({length:TOTAL},(_,i)=>i);
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  if(!solvable(a)){const x=a[0]===EMPTY?1:0,y=a[1]===EMPTY?2:1;[a[x],a[y]]=[a[y],a[x]];}
+  return a;
+}
+function checkWin(b){for(let i=0;i<b.length;i++)if(b[i]!==i)return false;return true;}
+
+// State
+let board=mkBoard(),moves=0,sec=0,started=false,won=false,showHint=false,timer=null;
+let mIdx=Math.floor(Math.random()*MEMBERS.length);
+
+function cur(){return MEMBERS[mIdx];}
+function curH(){return handle(cur());}
+function curI(){return imgPath(cur());}
+
+function reset(){
+  board=mkBoard();moves=0;sec=0;started=false;won=false;
+  clearInterval(timer);timer=null;render();
+}
+function skip(){
+  mIdx=Math.floor(Math.random()*MEMBERS.length);
+  new Image().src=curI(); // preload
+  reset();
+}
+
+function fmt(s){return Math.floor(s/60)+':'+((s%60<10?'0':'')+(s%60));}
+
+function move(pos){
+  if(won)return;
+  const ep=board.indexOf(EMPTY),eC=ep%N,eR=ep/N|0,c=pos%N,r=pos/N|0;
+  if((Math.abs(c-eC)===1&&r===eR)||(Math.abs(r-eR)===1&&c===eC)){
+    if(!started){started=true;timer=setInterval(()=>{sec++;render();},1000);}
+    sndMove();
+    [board[pos],board[ep]]=[board[ep],board[pos]];
+    moves++;
+    if(checkWin(board)){won=true;clearInterval(timer);sndWin();}
+    render();
+  }
+}
+
+function shareUrl(){
+  const h=curH(),t=fmt(sec);
+  const msg=SHARE_MSGS[Math.floor(Math.random()*SHARE_MSGS.length)](h,t);
+  return"https://twitter.com/intent/tweet?text="+encodeURIComponent(msg+"\n\n"+TAGS+"\n"+URL);
+}
+
+function render(){
+  const app=document.getElementById('app');
+  const vw=Math.min(380,window.innerWidth-60);
+  const T=vw/N;
+  let h=`<div class="card">`;
+  // Header
+  h+=`<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+    <h1>Ritual Puzzle</h1><div class="sub">created by badang</div></div>`;
+  // PFP + member
+  h+=`<div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+    <img class="pfp-circle" src="${curI()}" alt="${curH()}" onerror="this.style.display='none'">
+    <div class="member-row">
+      <span>${curH()}</span>
+      <button class="skip-btn" onclick="skip()" title="Random member">🔄</button>
+    </div>
+  </div>`;
+  // Stats
+  h+=`<div class="stats">
+    <span>Moves <b>${moves}</b></span>
+    <span>Time <b>${fmt(sec)}</b></span>
+  </div>`;
+  // Shuffle
+  h+=`<button class="btn" onclick="reset()">Shuffle</button>`;
+  // Board
+  h+=`<div class="board-wrap"><div class="board" style="width:${vw}px;height:${vw}px">`;
+  for(let p=0;p<board.length;p++){
+    const ti=board[p],empty=ti===EMPTY&&!won;
+    const col=p%N,row=p/N|0,oC=ti%N,oR=ti/N|0;
+    h+=`<div class="tile${empty?' empty':''}" onclick="move(${p})" style="width:${T}px;height:${T}px;left:${col*T}px;top:${row*T}px;${empty?'':`background-image:url('${curI()}');background-size:${vw}px ${vw}px;background-position:-${oC*T}px -${oR*T}px;`}"></div>`;
+  }
+  h+=`</div></div>`;
+  // Hint
+  h+=`<span class="hint-toggle${showHint?' on':''}" onclick="showHint=!showHint;render()">${showHint?'Hide Preview':'Show Preview'}</span>`;
+  h+=`</div>`;
+  // Hint img
+  if(showHint) h+=`<img class="hint-img" src="${curI()}" alt="hint">`;
+  // Win
+  if(won){
+    h+=`<div class="overlay">
+      <div style="font-size:48px">✨</div>
+      <h2>Puzzle Complete!</h2>
+      <p>${moves} moves · ${fmt(sec)}</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+        <button class="btn active" onclick="reset()">Play Again</button>
+        <a class="share-btn" href="${shareUrl()}" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Share
+        </a>
+      </div>
+    </div>`;
+  }
+  app.innerHTML=h;
+}
+
+// Keyboard
+document.addEventListener('keydown',e=>{
+  if(won)return;
+  const ep=board.indexOf(EMPTY),eC=ep%N,eR=ep/N|0;
+  let t=-1;
+  if(e.key==='ArrowUp'&&eR<N-1)t=(eR+1)*N+eC;
+  if(e.key==='ArrowDown'&&eR>0)t=(eR-1)*N+eC;
+  if(e.key==='ArrowLeft'&&eC<N-1)t=eR*N+eC+1;
+  if(e.key==='ArrowRight'&&eC>0)t=eR*N+eC-1;
+  if(t>=0){e.preventDefault();move(t);}
+});
+
+new Image().src=curI();
+render();
+window.addEventListener('resize',render);
+</script>
+</body>
+</html>
