@@ -70,7 +70,7 @@ const MEMBERS=[
 const PNG_SET=new Set(["_rocariedk"]);
 function ext(m){return PNG_SET.has(m)?".png":".jpg";}
 function handle(m){return "@"+m.substring(1);}
-function imgPath(m){return "images/"+m+ext(m);}
+function imgPath(m){return "images/"+handle(m)+ext(m);}
 
 const N=4, TOTAL=N*N, EMPTY=TOTAL-1;
 
