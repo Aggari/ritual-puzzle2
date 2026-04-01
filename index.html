@@ -21,8 +21,8 @@ body{background:var(--bg);font-family:var(--font);min-height:100vh;display:flex;
 h1{font-family:var(--serif);font-weight:400;font-size:26px;color:var(--text);letter-spacing:1px}
 .sub{font-size:11px;color:var(--textMuted);letter-spacing:.5px}
 .member-row{font-size:14px;color:var(--accent);font-weight:600;letter-spacing:.3px;display:flex;align-items:center;gap:6px}
-.skip-btn{background:none;border:1px solid var(--border);border-radius:50%;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--textSoft);transition:all .15s;line-height:1}
-.skip-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accentSoft)}
+.skip-btn{background:var(--accentSoft);border:1.5px solid var(--accent);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:11px;font-weight:600;color:var(--accent);transition:all .15s;font-family:var(--font);letter-spacing:.3px}
+.skip-btn:hover{background:var(--accent);color:#fff}
 .stats{display:flex;gap:28px;font-size:13px;color:var(--textSoft)}
 .stats b{color:var(--accent);font-size:16px;font-weight:700}
 .btn{padding:8px 18px;border:1.5px solid var(--border);background:var(--card);color:var(--textSoft);font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;letter-spacing:.3px;transition:all .15s;font-family:var(--font)}
@@ -70,7 +70,7 @@ const MEMBERS=[
 const PNG_SET=new Set(["_rocariedk"]);
 function ext(m){return PNG_SET.has(m)?".png":".jpg";}
 function handle(m){return "@"+m.substring(1);}
-function imgPath(m){return "images/"+handle(m)+ext(m);}
+function imgPath(m){return "images/"+m+ext(m);}
 
 const N=4, TOTAL=N*N, EMPTY=TOTAL-1;
 
@@ -81,6 +81,7 @@ const SHARE_MSGS=[
   (h,t)=>`🧩 Completed ${h}'s puzzle in ${t}! 🧡 Every piece matters in Ritual fam~`,
   (h,t)=>`🧩 Found all 16 pieces of ${h}! 🫶 Come find your fam in the puzzle~`
 ];
+const CREATED="Created by @Livinginaprayer";
 const TAGS="@ritualfnd @dunken9718 @Jez_Cryptoz @joshsimenhoff @0xMadScientist";
 const URL="https://ritual-puzzle2-badang.vercel.app/";
 
@@ -151,7 +152,7 @@ function move(pos){
 function shareUrl(){
   const h=curH(),t=fmt(sec);
   const msg=SHARE_MSGS[Math.floor(Math.random()*SHARE_MSGS.length)](h,t);
-  return"https://twitter.com/intent/tweet?text="+encodeURIComponent(msg+"\n\n"+TAGS+"\n"+URL);
+  return"https://twitter.com/intent/tweet?text="+encodeURIComponent(msg+"\n\n"+CREATED+"\n"+TAGS+"\n"+URL);
 }
 
 function render(){
@@ -167,7 +168,7 @@ function render(){
     <img class="pfp-circle" src="${curI()}" alt="${curH()}" onerror="this.style.display='none'">
     <div class="member-row">
       <span>${curH()}</span>
-      <button class="skip-btn" onclick="skip()" title="Random member">🔄</button>
+      <button class="skip-btn" onclick="skip()">random pick</button>
     </div>
   </div>`;
   // Stats
